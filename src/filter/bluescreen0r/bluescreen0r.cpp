@@ -29,12 +29,11 @@
 #include <math.h>
 
 
-class bluescreen0r : public frei0r::filter
-{
+class bluescreen0r: public frei0r::filter {
 private:
-	double dist;
+	double 			dist;
 	f0r_param_color color;
-	uint32_t r256,g256,b256;
+	uint32_t 		r256,g256,b256;
 	
 	// returns the distance to 'color', but does not normalize
 	inline uint32_t distance(uint32_t pixel) {
@@ -50,41 +49,44 @@ private:
 		return (uint32_t) d; // no sqrtf
 	}
 public:
-	bluescreen0r(unsigned int width, unsigned int height)
-	{
+	bluescreen0r(unsigned int width, unsigned int height) {
 		dist = 0.288;
 		
 		color.r = 0;
 		color.g = 0.94;
 		color.b = 0;
 		
-		register_param(color,  "Color",    "The color to make transparent (B G R)");
+		register_param(color, "Color", "The color to make transparent (B G R)");
 		register_param(dist, "Distance", "Distance to Color (127 is good)");
 	}
 
-	virtual void update(double time,
-	                    uint32_t* out,
-		            const uint32_t* in) {
-		const uint32_t* pixel	=in;
-		uint32_t* outpixel= out;
+	virtual void update(
+		double 			time,
+	    uint32_t* 		out,
+		const uint32_t* in
+	) {
+		const uint32_t* pixel	= in;
+		uint32_t* outpixel		= out;
 		
-		uint32_t distInt = (uint32_t) (dist*dist*195075);
-		uint32_t distInt2 = distInt/2;
+		uint32_t distInt 	= (uint32_t) (dist * dist * 195075);
+		uint32_t distInt2 	= distInt / 2;
 		
-		r256=255*color.r;
-		g256=255*color.g;
-		b256=255*color.b;
+		r256 = 255 * color.r;
+		g256 = 255 * color.g;
+		b256 = 255 * color.b;
 		
-		while(pixel != in+size) {
-			*outpixel= (*pixel & 0x00FFFFFF); // copy all except alpha
+		while(pixel != in + size) {
+			*outpixel= (*pixel & 0x00FFFFFF); 	// copy all except alpha
 			
-			uint32_t d = distance(*pixel); // get distance
-			unsigned char a = 255; // default alpha
+			uint32_t d 		= distance(*pixel); // get distance
+			unsigned char a = 255; 				// default alpha
 			if (d < distInt) {
 				a = 0;
 				if (d > distInt2) {
-					a = 256*(d-distInt2)/distInt2;
+					a = 256 * (d-distInt2) / distInt2;
 				}
+			} else if (*pixel >> 24 == 0) {
+				a = 0;
 			}
 			*outpixel |= (a<<24);
 			
@@ -95,5 +97,5 @@ public:
 };
 
 
-frei0r::construct<bluescreen0r> plugin("bluescreen0r", "Color to alpha (blit SRCALPHA)", "Hedde Bosman",0,3,F0R_COLOR_MODEL_RGBA8888);
+frei0r::construct<bluescreen0r> plugin("bluescreen0r", "Color to alpha (blit SRCALPHA)", "Hedde Bosman", 0, 3, F0R_COLOR_MODEL_RGBA8888);
 
